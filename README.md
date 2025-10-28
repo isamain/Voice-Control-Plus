@@ -13,6 +13,8 @@ We click the button again in the menu of the user we selected and it is closed, 
 
 Have Fun :)
 
+-------------------------------------------------------------------------------------
+
 Tr / Ne işe yarar?
 
 seçeceğiniz kişinin sürekli olarak ses kanalından bağlantısını otomatik olarak kesmenizi sağlar.
