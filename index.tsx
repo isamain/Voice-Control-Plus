@@ -42,7 +42,7 @@ function Icon({ height = 24, width = 24, className, children, viewBox, ...svgPro
 function FollowIcon(props: IconProps) {
     return (
         <Icon {...props} viewBox="0 -960 960 960">
-            <path fill="currentColor" d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
+            <path fill="currentColor" d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0-46-15.5-90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
         </Icon>
     );
 }
@@ -66,7 +66,7 @@ const Auth: { getToken: () => string } = findByPropsLazy("getToken");
 async function patchGuildMember(guildId: string, userId: string, body: any, successMsg: string) {
     const token = Auth?.getToken?.();
     if (!token) {
-        Toasts.show({ message: "Auth token alınamadı", type: Toasts.Type.FAILURE, id: Toasts.genId() });
+        Toasts.show({ message: "Failed to get auth token", type: Toasts.Type.FAILURE, id: Toasts.genId() });
         return;
     }
 
@@ -80,9 +80,9 @@ async function patchGuildMember(guildId: string, userId: string, body: any, succ
         if (response.ok)
             Toasts.show({ message: successMsg, type: Toasts.Type.SUCCESS, id: Toasts.genId() });
         else
-            Toasts.show({ message: `İşlem başarısız (${response.status})`, type: Toasts.Type.FAILURE, id: Toasts.genId() });
+            Toasts.show({ message: `Action failed (${response.status})`, type: Toasts.Type.FAILURE, id: Toasts.genId() });
     } catch {
-        Toasts.show({ message: "Ağ hatası oluştu", type: Toasts.Type.FAILURE, id: Toasts.genId() });
+        Toasts.show({ message: "Network error occurred", type: Toasts.Type.FAILURE, id: Toasts.genId() });
     }
 }
 
@@ -90,9 +90,9 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: { user: Us
     if (!user || user.id === UserStore.getCurrentUser().id) return;
 
     const items = [
-        { id: "disconnect", label: "🔌 Bağlantıyı Kes", key: "disconnectUserId" },
-        { id: "mute", label: "🔇 Sustur", key: "muteUserId" },
-        { id: "deafen", label: "🎧 Kulaklığı Kapat", key: "deafenUserId" },
+        { id: "disconnect", label: "🔌 Disconnect", key: "disconnectUserId" },
+        { id: "mute", label: "🔇 Mute", key: "muteUserId" },
+        { id: "deafen", label: "🎧 Deafen", key: "deafenUserId" },
     ];
 
     children.splice(-1, 0, (
@@ -102,7 +102,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: { user: Us
                 return (
                     <Menu.MenuItem
                         id={id}
-                        label={label + (active ? " (aktif)" : "")}
+                        label={label + (active ? " (active)" : "")}
                         action={() => settings.store[key] = active ? "" : user.id}
                         icon={FollowIcon}
                     />
@@ -114,7 +114,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user }: { user: Us
 
 export default definePlugin({
     name: "VoiceControlPlus",
-    description: "Kullanıcıyı otomatik susturur, kulaklığını kapatır veya bağlantısını keser.",
+    description: "Automatically mutes the user, deafens them, or disconnects them from voice.",
     authors: [{ id: 1242811215110082584n, name: "Jeasus" }, { name: "emirvaki", id: 1357545010848989247n }],
     settings,
     contextMenus: { "user-context": UserContext },
@@ -128,17 +128,17 @@ export default definePlugin({
                 if (!guildId) continue;
                 if (!PermissionStore.can(PermissionsBits.MOVE_MEMBERS, channel)) continue;
 
-                // Kanal değişikliği (Disconnect)
+                // Channel change (Disconnect)
                 if (settings.store.disconnectUserId === userId && channelId)
-                    void patchGuildMember(guildId, userId, { channel_id: null }, "Kullanıcı bağlantıdan atıldı");
+                    void patchGuildMember(guildId, userId, { channel_id: null }, "User has been disconnected");
 
-                // Mute kontrolü
+                // Mute check
                 if (settings.store.muteUserId === userId && mute === false)
-                    void patchGuildMember(guildId, userId, { mute: true }, "Kullanıcı susturuldu");
+                    void patchGuildMember(guildId, userId, { mute: true }, "User has been muted");
 
-                // Deafen kontrolü
+                // Deafen check
                 if (settings.store.deafenUserId === userId && deaf === false)
-                    void patchGuildMember(guildId, userId, { deaf: true }, "Kullanıcının kulaklığı kapatıldı");
+                    void patchGuildMember(guildId, userId, { deaf: true }, "User has been deafened");
             }
         }
     }
